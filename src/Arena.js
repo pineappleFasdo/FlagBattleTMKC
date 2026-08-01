@@ -3,34 +3,45 @@ import Phaser from "phaser";
 export default class Arena {
 
     constructor(scene) {
+
         this.scene = scene;
-        this.graphics = scene.add.graphics();
+        this.graphics = null;
+
     }
 
     draw(cx, cy, radius) {
 
-        this.graphics.clear();
+        if (this.graphics) {
 
-        // Background
-        this.graphics.fillStyle(0x08111f);
-        this.graphics.fillCircle(cx, cy, radius);
+            this.graphics.destroy();
 
-        const gap = Phaser.Math.DegToRad(50);
+        }
+
+        this.graphics = this.scene.add.graphics();
+
+        const gap = Phaser.Math.DegToRad(46);
 
         const start = -Math.PI / 2 + gap / 2;
         const end = Math.PI * 1.5 - gap / 2;
 
-        // Outer glow
-        this.graphics.lineStyle(10, 0x39d5ff, 0.35);
+        // Glow
+        this.graphics.lineStyle(16, 0x00ffff, 0.08);
         this.graphics.beginPath();
-        this.graphics.arc(cx, cy, radius + 4, start, end, false);
+        this.graphics.arc(cx, cy, radius, start, end);
         this.graphics.strokePath();
 
-        // White ring
-        this.graphics.lineStyle(8, 0xffffff);
+        // Main ring
+        this.graphics.lineStyle(8, 0xffffff, 1);
         this.graphics.beginPath();
-        this.graphics.arc(cx, cy, radius, start, end, false);
+        this.graphics.arc(cx, cy, radius, start, end);
         this.graphics.strokePath();
+
+        // Outer highlight
+        this.graphics.lineStyle(2, 0x66ffff, 0.5);
+        this.graphics.beginPath();
+        this.graphics.arc(cx, cy, radius + 8, start, end);
+        this.graphics.strokePath();
+
     }
 
 }
