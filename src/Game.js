@@ -1,44 +1,104 @@
 import Phaser from "phaser";
 
-export default class GameScene extends Phaser.Scene{
+export default class GameScene extends Phaser.Scene {
 
-constructor(){
+    constructor() {
+        super("game");
+    }
 
-super("game");
+    preload() {
 
-}
+    }
 
-preload(){
+    create() {
 
-}
+        // Screen dimensions
+        const width = this.scale.width;
+        const height = this.scale.height;
 
-create(){
+        // Center of screen
+        const cx = width / 2;
+        const cy = height / 2;
 
-this.add.text(
+        // Arena radius (responsive)
+        const radius = Math.min(width, height) * 0.42;
 
-540,
+        // Background
+        this.cameras.main.setBackgroundColor("#050814");
 
-70,
+        // ---------- TITLE ----------
+        this.add.text(cx, 80, "FLAG BATTLE", {
+            fontFamily: "Arial",
+            fontSize: "56px",
+            color: "#ffffff",
+            fontStyle: "bold"
+        }).setOrigin(0.5);
 
-"FLAG BATTLE",
+        // ---------- SUBTITLE ----------
+        this.add.text(cx, 145, "Prototype v0.1", {
+            fontFamily: "Arial",
+            fontSize: "26px",
+            color: "#7fdfff"
+        }).setOrigin(0.5);
 
-{
+        // ---------- ARENA ----------
+        const graphics = this.add.graphics();
 
-fontSize:54,
+        graphics.lineStyle(12, 0x00ffff, 1);
 
-color:"#ffffff"
+        graphics.strokeCircle(
+            cx,
+            cy,
+            radius
+        );
 
-}
+        // Glow effect
+        graphics.lineStyle(4, 0x44ffff, 0.35);
 
-).setOrigin(.5);
+        graphics.strokeCircle(
+            cx,
+            cy,
+            radius + 6
+        );
 
-const radius=450;
+        graphics.lineStyle(2, 0x66ffff, 0.15);
 
-const graphics=this.add.graphics();
+        graphics.strokeCircle(
+            cx,
+            cy,
+            radius + 12
+        );
 
-graphics.lineStyle(10,0x00ffff);
+        // ---------- CENTER DOT ----------
+        graphics.fillStyle(0xffffff);
 
-graphics.strokeCircle(540,950,radius);
+        graphics.fillCircle(
+            cx,
+            cy,
+            5
+        );
 
-}
+        // ---------- DEBUG TEXT ----------
+        this.add.text(
+            20,
+            height - 40,
+            `Resolution : ${width} x ${height}`,
+            {
+                fontFamily: "Arial",
+                fontSize: "20px",
+                color: "#aaaaaa"
+            }
+        );
+
+        // Save values for later
+        this.cx = cx;
+        this.cy = cy;
+        this.radius = radius;
+
+    }
+
+    update() {
+
+    }
+
 }
