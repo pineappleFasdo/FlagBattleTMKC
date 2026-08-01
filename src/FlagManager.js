@@ -46,16 +46,26 @@ export default class FlagManager {
                 countries[i % countries.length];
 
             const label = this.scene.add.text(
-                x,
-                y,
-                token.country,
-                {
-                    fontSize: "11px",
-                    color: "#ffffff",
-                    fontStyle: "bold",
-                    fontFamily: "Arial"
-                }
-            );
+
+    x,
+
+    y,
+
+    token.country.code,
+
+    {
+
+        fontSize: "11px",
+
+        color: "#ffffff",
+
+        fontStyle: "bold",
+
+        fontFamily: "Arial"
+
+    }
+
+).setOrigin(0.5);
 
             label.setOrigin(0.5);
 
