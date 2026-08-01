@@ -1,18 +1,16 @@
 import Phaser from "phaser";
-import GameScene from "./Game";
+import GameScene from "./Game.js";
 
 const config = {
     type: Phaser.AUTO,
 
     parent: "game",
 
-    backgroundColor: "#050814",
+    backgroundColor: "#08111f",
 
     scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: 1080,
-        height: 1920
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH
     },
 
     physics: {
