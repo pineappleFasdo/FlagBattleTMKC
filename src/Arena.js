@@ -1,45 +1,56 @@
 import Phaser from "phaser";
+import { ARENA_GAP_DEGREES } from "./assets.js";
 
 export default class Arena {
 
     constructor(scene) {
 
         this.scene = scene;
-        this.graphics = null;
+
+        this.graphics = scene.add.graphics();
 
     }
 
     draw(cx, cy, radius) {
 
-        if (this.graphics) {
+        this.graphics.clear();
 
-            this.graphics.destroy();
+        // Arena background
+        this.graphics.fillStyle(0x10223d, 1);
+        this.graphics.fillCircle(cx, cy, radius);
 
-        }
+        // Soft glow
+        this.graphics.lineStyle(14, 0x00d4ff, 0.25);
+        this.drawRing(cx, cy, radius + 5);
 
-        this.graphics = this.scene.add.graphics();
-
-        const gap = Phaser.Math.DegToRad(46);
-
-        const start = -Math.PI / 2 + gap / 2;
-        const end = Math.PI * 1.5 - gap / 2;
-
-        // Glow
-        this.graphics.lineStyle(16, 0x00ffff, 0.08);
-        this.graphics.beginPath();
-        this.graphics.arc(cx, cy, radius, start, end);
-        this.graphics.strokePath();
-
-        // Main ring
+        // Main border
         this.graphics.lineStyle(8, 0xffffff, 1);
-        this.graphics.beginPath();
-        this.graphics.arc(cx, cy, radius, start, end);
-        this.graphics.strokePath();
+        this.drawRing(cx, cy, radius);
 
-        // Outer highlight
-        this.graphics.lineStyle(2, 0x66ffff, 0.5);
+        // Inner border
+        this.graphics.lineStyle(3, 0x7fdfff, 0.8);
+        this.drawRing(cx, cy, radius - 10);
+
+    }
+
+    drawRing(cx, cy, radius) {
+
+        const gap = Phaser.Math.DegToRad(ARENA_GAP_DEGREES);
+
+        const start = (-Math.PI / 2) + gap / 2;
+        const end = (Math.PI * 1.5) - gap / 2;
+
         this.graphics.beginPath();
-        this.graphics.arc(cx, cy, radius + 8, start, end);
+
+        this.graphics.arc(
+            cx,
+            cy,
+            radius,
+            start,
+            end,
+            false
+        );
+
         this.graphics.strokePath();
 
     }
