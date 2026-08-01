@@ -7,33 +7,30 @@ import Tournament from "./Tournament";
 
 export default class GameScene extends Phaser.Scene {
 
-    constructor(){
-
+    constructor() {
         super("GameScene");
-
     }
 
-    preload(){
+    preload() {
 
-        const g=this.make.graphics({add:false});
+        const g = this.make.graphics({ add: false });
 
-        g.fillStyle(0xffffff,1);
-        g.fillCircle(20,20,20);
+        g.fillStyle(0xffffff, 1);
+        g.fillCircle(20, 20, 20);
 
-        g.lineStyle(2,0x222222);
-        g.strokeCircle(20,20,20);
+        g.lineStyle(2, 0x222222);
+        g.strokeCircle(20, 20, 20);
 
-        g.generateTexture("token",40,40);
+        g.generateTexture("token", 40, 40);
 
         g.destroy();
 
     }
 
-    create(){
+    create() {
 
-        this.started=false;
-
-        this.timeLeft=60;
+        this.started = false;
+        this.timeLeft = 60;
 
         this.resizeGame();
 
@@ -43,193 +40,131 @@ export default class GameScene extends Phaser.Scene {
             this
         );
 
-        this.arena=new Arena(this);
+        this.arena = new Arena(this);
 
-        this.physicsManager=new PhysicsManager(this);
+        this.physicsManager = new PhysicsManager(this);
 
-        this.flagManager=new FlagManager(this);
+        this.flagManager = new FlagManager(this);
 
-        this.tournament=new Tournament();
+        this.tournament = new Tournament();
 
         this.arena.draw(
-
             this.cx,
-
             this.cy,
-
             this.radius
+        );
 
+        // Build Matter wall with opening
+        this.physicsManager.buildArena(
+            this.cx,
+            this.cy,
+            this.radius
         );
 
         this.createUI();
 
         this.flagManager.spawn(
-
             50,
-
             this.cx,
-
             this.cy,
-
-            this.radius
-
+            this.radius - 30
         );
 
     }
 
-    resizeGame(){
+    resizeGame() {
 
-        this.w=this.scale.width;
+        this.w = this.scale.width;
 
-        this.h=this.scale.height;
+        this.h = this.scale.height;
 
-        this.cx=this.w/2;
+        this.cx = this.w / 2;
 
-        this.cy=this.h*0.60;
+        this.cy = this.h * 0.60;
 
-        this.radius=Math.min(
-
+        this.radius = Math.min(
             this.w,
-
             this.h
-
-        )*0.38;
+        ) * 0.43;
 
         this.cameras.main.setBackgroundColor(
-
             "#08111f"
-
         );
 
     }
 
-    createUI(){
+    createUI() {
 
-        this.title=this.add.text(
-
+        this.title = this.add.text(
             this.cx,
-
             60,
-
             "FLAG BATTLE",
-
             {
-
-                fontSize:"46px",
-
-                color:"#ffffff",
-
-                fontStyle:"bold"
-
+                fontSize: "46px",
+                color: "#ffffff",
+                fontStyle: "bold"
             }
-
         ).setOrigin(.5);
 
-        this.timer=this.add.text(
-
+        this.timer = this.add.text(
             this.cx,
-
             110,
-
             "QUALIFYING • 60",
-
             {
-
-                fontSize:"28px",
-
-                color:"#7fdfff"
-
+                fontSize: "28px",
+                color: "#7fdfff"
             }
-
         ).setOrigin(.5);
 
-        this.counter=this.add.text(
-
+        this.counter = this.add.text(
             this.cx,
-
             150,
-
             "Flags : 50",
-
             {
-
-                fontSize:"24px",
-
-                color:"#ffffff"
-
+                fontSize: "24px",
+                color: "#ffffff"
             }
-
         ).setOrigin(.5);
 
-        this.roundText=this.add.text(
-
+        this.roundText = this.add.text(
             this.cx,
-
             185,
-
             this.tournament.getRoundName(),
-
             {
-
-                fontSize:"22px",
-
-                color:"#ffd54f"
-
+                fontSize: "22px",
+                color: "#ffd54f"
             }
-
         ).setOrigin(.5);
 
-        this.startButton=this.add.text(
-
+        this.startButton = this.add.text(
             this.cx,
-
-            this.h-90,
-
+            this.h - 90,
             "START BATTLE",
-
             {
-
-                fontSize:"34px",
-
-                color:"#000000",
-
-                backgroundColor:"#00ffff",
-
-                padding:{
-
-                    left:18,
-
-                    right:18,
-
-                    top:10,
-
-                    bottom:10
-
+                fontSize: "34px",
+                color: "#000000",
+                backgroundColor: "#00ffff",
+                padding: {
+                    left: 18,
+                    right: 18,
+                    top: 10,
+                    bottom: 10
                 }
-
             }
-
         ).setOrigin(.5).setInteractive();
 
         this.startButton.on(
-
             "pointerdown",
-
-            ()=>{
-
-                this.beginBattle();
-
-            }
-
+            () => this.beginBattle()
         );
 
     }
 
-    beginBattle(){
+    beginBattle() {
 
-        if(this.started) return;
+        if (this.started) return;
 
-        this.started=true;
+        this.started = true;
 
         this.startButton.setVisible(false);
 
@@ -237,21 +172,19 @@ export default class GameScene extends Phaser.Scene {
 
         this.time.addEvent({
 
-            delay:1000,
+            delay: 1000,
 
-            repeat:59,
+            repeat: 59,
 
-            callback:()=>{
+            callback: () => {
 
                 this.timeLeft--;
 
                 this.timer.setText(
-
-                    "QUALIFYING • "+this.timeLeft
-
+                    "QUALIFYING • " + this.timeLeft
                 );
 
-                if(this.timeLeft===0){
+                if (this.timeLeft <= 0) {
 
                     this.endQualifying();
 
@@ -263,37 +196,20 @@ export default class GameScene extends Phaser.Scene {
 
     }
 
-    endQualifying(){
+    endQualifying() {
 
         this.tournament.nextRound();
 
         this.roundText.setText(
-
             this.tournament.getRoundName()
-
         );
 
     }
 
     update() {
 
-    for (const token of this.flagManager.tokens) {
-
-        this.physicsManager.keepInside(
-
-            token,
-
-            this.cx,
-
-            this.cy,
-
-            this.radius - 20
-
-        );
+        this.flagManager.update();
 
     }
 
-    this.flagManager.update();
-
-}
 }
