@@ -1,21 +1,23 @@
 import Phaser from "phaser";
 
+import Arena from "./Arena";
+import PhysicsManager from "./Physics";
+import FlagManager from "./FlagManager";
+import Tournament from "./Tournament";
+
 export default class GameScene extends Phaser.Scene {
 
-    constructor() {
+    constructor(){
+
         super("GameScene");
 
-        this.tokens = [];
-        this.started = false;
-        this.timeLeft = 60;
     }
 
-    preload() {
+    preload(){
 
-        // Create placeholder token texture
-        const g = this.make.graphics({ add: false });
+        const g=this.make.graphics({add:false});
 
-        g.fillStyle(0xffffff, 1);
+        g.fillStyle(0xffffff,1);
         g.fillCircle(20,20,20);
 
         g.lineStyle(2,0x222222);
@@ -29,82 +31,74 @@ export default class GameScene extends Phaser.Scene {
 
     create(){
 
-        this.resize();
+        this.started=false;
+
+        this.timeLeft=60;
+
+        this.resizeGame();
 
         this.scale.on(
             "resize",
-            this.resize,
+            this.resizeGame,
             this
         );
 
-        this.drawArena();
+        this.arena=new Arena(this);
 
-        this.createWalls();
+        this.physicsManager=new PhysicsManager(this);
+
+        this.flagManager=new FlagManager(this);
+
+        this.tournament=new Tournament();
+
+        this.arena.draw(
+
+            this.cx,
+
+            this.cy,
+
+            this.radius
+
+        );
 
         this.createUI();
 
-        this.spawnTokens(50);
+        this.flagManager.spawn(
+
+            50,
+
+            this.cx,
+
+            this.cy,
+
+            this.radius
+
+        );
 
     }
 
-    resize(){
+    resizeGame(){
 
         this.w=this.scale.width;
+
         this.h=this.scale.height;
 
         this.cx=this.w/2;
-        this.cy=this.h/2;
 
-        this.radius=Math.min(this.w,this.h)*0.40;
+        this.cy=this.h*0.60;
 
-        this.cameras.main.setBackgroundColor("#08111f");
+        this.radius=Math.min(
 
-    }
+            this.w,
 
-    drawArena(){
+            this.h
 
-        if(this.arena){
+        )*0.38;
 
-            this.arena.destroy();
+        this.cameras.main.setBackgroundColor(
 
-        }
+            "#08111f"
 
-        this.arena=this.add.graphics();
-
-        this.arena.lineStyle(
-            16,
-            0x00ffff,
-            .08
-        );
-
-        this.arena.strokeCircle(
-            this.cx,
-            this.cy,
-            this.radius
-        );
-
-        this.arena.lineStyle(
-            8,
-            0xffffff,
-            1
-        );
-
-        this.arena.strokeCircle(
-            this.cx,
-            this.cy,
-            this.radius
-        );
-
-        this.arena.lineStyle(
-            2,
-            0x66ffff,
-            .5
-        );
-
-        this.arena.strokeCircle(
-            this.cx,
-            this.cy,
-            this.radius+8
         );
 
     }
@@ -115,7 +109,7 @@ export default class GameScene extends Phaser.Scene {
 
             this.cx,
 
-            55,
+            60,
 
             "FLAG BATTLE",
 
@@ -135,7 +129,7 @@ export default class GameScene extends Phaser.Scene {
 
             this.cx,
 
-            105,
+            110,
 
             "QUALIFYING • 60",
 
@@ -153,7 +147,7 @@ export default class GameScene extends Phaser.Scene {
 
             this.cx,
 
-            145,
+            150,
 
             "Flags : 50",
 
@@ -167,34 +161,57 @@ export default class GameScene extends Phaser.Scene {
 
         ).setOrigin(.5);
 
-        this.start=this.add.text(
+        this.roundText=this.add.text(
 
             this.cx,
 
-            this.h-80,
+            185,
 
-            "START",
+            this.tournament.getRoundName(),
+
+            {
+
+                fontSize:"22px",
+
+                color:"#ffd54f"
+
+            }
+
+        ).setOrigin(.5);
+
+        this.startButton=this.add.text(
+
+            this.cx,
+
+            this.h-90,
+
+            "START BATTLE",
 
             {
 
                 fontSize:"34px",
 
+                color:"#000000",
+
                 backgroundColor:"#00ffff",
 
-                color:"#000",
-
                 padding:{
+
                     left:18,
+
                     right:18,
+
                     top:10,
+
                     bottom:10
+
                 }
 
             }
 
         ).setOrigin(.5).setInteractive();
 
-        this.start.on(
+        this.startButton.on(
 
             "pointerdown",
 
@@ -208,75 +225,15 @@ export default class GameScene extends Phaser.Scene {
 
     }
 
-    createWalls(){
-
-        this.wallRadius=this.radius-18;
-
-    }
-
-    spawnTokens(count){
-
-        const colors=[
-            0xff5252,
-            0x42a5f5,
-            0x66bb6a,
-            0xffca28,
-            0xab47bc,
-            0xff7043,
-            0x26c6da,
-            0xec407a,
-            0x8d6e63,
-            0x7e57c2
-        ];
-
-        for(let i=0;i<count;i++){
-
-            const angle=Phaser.Math.FloatBetween(0,Math.PI*2);
-
-            const dist=Phaser.Math.FloatBetween(0,this.radius-60);
-
-            const x=this.cx+Math.cos(angle)*dist;
-            const y=this.cy+Math.sin(angle)*dist;
-
-            const token=this.matter.add.image(
-                x,
-                y,
-                "token"
-            );
-
-            token.setCircle(20);
-            token.setBounce(1);
-            token.setFriction(0);
-            token.setFrictionAir(0);
-            token.setMass(1);
-
-            token.setTint(colors[i%colors.length]);
-
-            this.tokens.push(token);
-
-        }
-
-    }
-
     beginBattle(){
 
         if(this.started) return;
 
         this.started=true;
 
-        this.start.setVisible(false);
+        this.startButton.setVisible(false);
 
-        for(const token of this.tokens){
-
-            token.setVelocity(
-
-                Phaser.Math.FloatBetween(-4,4),
-
-                Phaser.Math.FloatBetween(-4,4)
-
-            );
-
-        }
+        this.flagManager.launch();
 
         this.time.addEvent({
 
@@ -289,8 +246,16 @@ export default class GameScene extends Phaser.Scene {
                 this.timeLeft--;
 
                 this.timer.setText(
+
                     "QUALIFYING • "+this.timeLeft
+
                 );
+
+                if(this.timeLeft===0){
+
+                    this.endQualifying();
+
+                }
 
             }
 
@@ -298,40 +263,39 @@ export default class GameScene extends Phaser.Scene {
 
     }
 
+    endQualifying(){
+
+        this.tournament.nextRound();
+
+        this.roundText.setText(
+
+            this.tournament.getRoundName()
+
+        );
+
+    }
+
     update(){
 
-        for(const token of this.tokens){
+        for(
 
-            const dx=token.x-this.cx;
-            const dy=token.y-this.cy;
+            const token of this.flagManager.tokens
 
-            const d=Math.sqrt(dx*dx+dy*dy);
+        ){
 
-            if(d>this.wallRadius){
+            this.physicsManager.keepInside(
 
-                const nx=dx/d;
-                const ny=dy/d;
+                token,
 
-                token.setPosition(
+                this.cx,
 
-                    this.cx+nx*this.wallRadius,
+                this.cy,
 
-                    this.cy+ny*this.wallRadius
+                this.radius-20
 
-                );
-
-                token.setVelocity(
-
-                    -token.body.velocity.x,
-
-                    -token.body.velocity.y
-
-                );
-
-            }
+            );
 
         }
 
     }
-
 }
