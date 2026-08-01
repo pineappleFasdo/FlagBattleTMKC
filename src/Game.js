@@ -211,5 +211,5 @@ export default class GameScene extends Phaser.Scene {
         this.flagManager.update();
 
     }
-
+}
 }
