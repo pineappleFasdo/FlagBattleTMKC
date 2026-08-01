@@ -1,33 +1,32 @@
 import Phaser from "phaser";
 import GameScene from "./Game";
 
-new Phaser.Game({
+const config = {
+    type: Phaser.AUTO,
 
-type:Phaser.AUTO,
+    parent: "game",
 
-width:1080,
+    backgroundColor: "#050814",
 
-height:1920,
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: 1080,
+        height: 1920
+    },
 
-backgroundColor:"#050814",
+    physics: {
+        default: "matter",
+        matter: {
+            gravity: {
+                x: 0,
+                y: 0
+            },
+            debug: false
+        }
+    },
 
-physics:{
+    scene: [GameScene]
+};
 
-default:"matter",
-
-matter:{
-
-gravity:{
-x:0,
-y:0
-},
-
-debug:false
-
-}
-
-},
-
-scene:[GameScene]
-
-});
+new Phaser.Game(config);
