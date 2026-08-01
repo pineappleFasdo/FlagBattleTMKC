@@ -5,67 +5,103 @@ export default class GameScene extends Phaser.Scene {
     constructor() {
         super("GameScene");
 
-        this.flags = [];
-        this.gameStarted = false;
+        this.tokens = [];
+        this.started = false;
         this.timeLeft = 60;
     }
 
     preload() {
 
-        // Temporary white circle texture
-        const g = this.make.graphics({ x: 0, y: 0, add: false });
+        // Create placeholder token texture
+        const g = this.make.graphics({ add: false });
 
-        g.fillStyle(0xffffff);
+        g.fillStyle(0xffffff, 1);
         g.fillCircle(20,20,20);
 
-        g.generateTexture("flag",40,40);
+        g.lineStyle(2,0x222222);
+        g.strokeCircle(20,20,20);
+
+        g.generateTexture("token",40,40);
+
+        g.destroy();
 
     }
 
-    create() {
+    create(){
 
-        this.w = this.scale.width;
-        this.h = this.scale.height;
+        this.resize();
 
-        this.cx = this.w / 2;
-        this.cy = this.h / 2;
-
-        this.radius = Math.min(this.w,this.h)*0.42;
-
-        this.cameras.main.setBackgroundColor("#08111f");
+        this.scale.on(
+            "resize",
+            this.resize,
+            this
+        );
 
         this.drawArena();
 
-        this.createBoundary();
+        this.createWalls();
 
         this.createUI();
 
-        this.spawnFlags(50);
+        this.spawnTokens(50);
+
+    }
+
+    resize(){
+
+        this.w=this.scale.width;
+        this.h=this.scale.height;
+
+        this.cx=this.w/2;
+        this.cy=this.h/2;
+
+        this.radius=Math.min(this.w,this.h)*0.40;
+
+        this.cameras.main.setBackgroundColor("#08111f");
 
     }
 
     drawArena(){
 
-        const g=this.add.graphics();
+        if(this.arena){
 
-        g.lineStyle(20,0x00ffff,0.08);
-        g.strokeCircle(
+            this.arena.destroy();
+
+        }
+
+        this.arena=this.add.graphics();
+
+        this.arena.lineStyle(
+            16,
+            0x00ffff,
+            .08
+        );
+
+        this.arena.strokeCircle(
             this.cx,
             this.cy,
             this.radius
         );
 
-        g.lineStyle(8,0xffffff,1);
+        this.arena.lineStyle(
+            8,
+            0xffffff,
+            1
+        );
 
-        g.strokeCircle(
+        this.arena.strokeCircle(
             this.cx,
             this.cy,
             this.radius
         );
 
-        g.lineStyle(2,0x66ffff,0.5);
+        this.arena.lineStyle(
+            2,
+            0x66ffff,
+            .5
+        );
 
-        g.strokeCircle(
+        this.arena.strokeCircle(
             this.cx,
             this.cy,
             this.radius+8
@@ -75,17 +111,17 @@ export default class GameScene extends Phaser.Scene {
 
     createUI(){
 
-        this.add.text(
+        this.title=this.add.text(
 
             this.cx,
 
-            60,
+            55,
 
             "FLAG BATTLE",
 
             {
 
-                fontSize:"48px",
+                fontSize:"46px",
 
                 color:"#ffffff",
 
@@ -99,7 +135,7 @@ export default class GameScene extends Phaser.Scene {
 
             this.cx,
 
-            115,
+            105,
 
             "QUALIFYING • 60",
 
@@ -113,7 +149,25 @@ export default class GameScene extends Phaser.Scene {
 
         ).setOrigin(.5);
 
-        this.startButton=this.add.text(
+        this.counter=this.add.text(
+
+            this.cx,
+
+            145,
+
+            "Flags : 50",
+
+            {
+
+                fontSize:"24px",
+
+                color:"#ffffff"
+
+            }
+
+        ).setOrigin(.5);
+
+        this.start=this.add.text(
 
             this.cx,
 
@@ -130,94 +184,99 @@ export default class GameScene extends Phaser.Scene {
                 color:"#000",
 
                 padding:{
-
-                    left:20,
-
-                    right:20,
-
+                    left:18,
+                    right:18,
                     top:10,
-
                     bottom:10
-
                 }
 
             }
 
         ).setOrigin(.5).setInteractive();
 
-        this.startButton.on("pointerdown",()=>{
+        this.start.on(
 
-            this.startBattle();
+            "pointerdown",
 
-        });
+            ()=>{
 
-    }
+                this.beginBattle();
 
-    createBoundary() {
+            }
 
-        const pieces = 64;
-
-        for (let i = 0; i < pieces; i++) {
-
-            const a = (Math.PI * 2 / pieces) * i;
-
-            const x = this.cx + Math.cos(a) * this.radius;
-            const y = this.cy + Math.sin(a) * this.radius;
-
-            this.matter.add.circle(x, y, 6, {
-                isStatic: true
-            });
-
-        }
+        );
 
     }
 
-    spawnFlags(count) {
+    createWalls(){
 
-        for (let i = 0; i < count; i++) {
+        this.wallRadius=this.radius-18;
 
-            const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+    }
 
-            const dist = Phaser.Math.FloatBetween(0, this.radius - 60);
+    spawnTokens(count){
 
-            const x = this.cx + Math.cos(angle) * dist;
-            const y = this.cy + Math.sin(angle) * dist;
+        const colors=[
+            0xff5252,
+            0x42a5f5,
+            0x66bb6a,
+            0xffca28,
+            0xab47bc,
+            0xff7043,
+            0x26c6da,
+            0xec407a,
+            0x8d6e63,
+            0x7e57c2
+        ];
 
-            const flag = this.matter.add.image(
+        for(let i=0;i<count;i++){
+
+            const angle=Phaser.Math.FloatBetween(0,Math.PI*2);
+
+            const dist=Phaser.Math.FloatBetween(0,this.radius-60);
+
+            const x=this.cx+Math.cos(angle)*dist;
+            const y=this.cy+Math.sin(angle)*dist;
+
+            const token=this.matter.add.image(
                 x,
                 y,
-                "flag"
+                "token"
             );
 
-            flag.setCircle(20);
+            token.setCircle(20);
+            token.setBounce(1);
+            token.setFriction(0);
+            token.setFrictionAir(0);
+            token.setMass(1);
 
-            flag.setBounce(1);
+            token.setTint(colors[i%colors.length]);
 
-            flag.setFriction(0);
-
-            flag.setFrictionAir(0);
-
-            flag.setVelocity(
-
-                Phaser.Math.FloatBetween(-2,2),
-
-                Phaser.Math.FloatBetween(-2,2)
-
-            );
-
-            this.flags.push(flag);
+            this.tokens.push(token);
 
         }
 
     }
 
-    startBattle(){
+    beginBattle(){
 
-        if(this.gameStarted) return;
+        if(this.started) return;
 
-        this.gameStarted=true;
+        this.started=true;
 
-        this.startButton.setVisible(false);
+        this.start.setVisible(false);
+
+        for(const token of this.tokens){
+
+            token.setVelocity(
+
+                Phaser.Math.FloatBetween(-4,4),
+
+                Phaser.Math.FloatBetween(-4,4)
+
+            );
+
+        }
 
         this.time.addEvent({
 
@@ -230,7 +289,7 @@ export default class GameScene extends Phaser.Scene {
                 this.timeLeft--;
 
                 this.timer.setText(
-                    "QUALIFYING • " + this.timeLeft
+                    "QUALIFYING • "+this.timeLeft
                 );
 
             }
@@ -241,31 +300,31 @@ export default class GameScene extends Phaser.Scene {
 
     update(){
 
-        for(const flag of this.flags){
+        for(const token of this.tokens){
 
-            const dx=flag.x-this.cx;
-            const dy=flag.y-this.cy;
+            const dx=token.x-this.cx;
+            const dy=token.y-this.cy;
 
             const d=Math.sqrt(dx*dx+dy*dy);
 
-            if(d>this.radius-20){
+            if(d>this.wallRadius){
 
                 const nx=dx/d;
                 const ny=dy/d;
 
-                flag.setPosition(
+                token.setPosition(
 
-                    this.cx+nx*(this.radius-20),
+                    this.cx+nx*this.wallRadius,
 
-                    this.cy+ny*(this.radius-20)
+                    this.cy+ny*this.wallRadius
 
                 );
 
-                flag.setVelocity(
+                token.setVelocity(
 
-                    -flag.body.velocity.x,
+                    -token.body.velocity.x,
 
-                    -flag.body.velocity.y
+                    -token.body.velocity.y
 
                 );
 
