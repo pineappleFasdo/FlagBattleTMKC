@@ -3,60 +3,107 @@ import Phaser from "phaser";
 export default class PhysicsManager {
 
     constructor(scene) {
+
         this.scene = scene;
-        this.walls = [];
-    }
-
-    clear() {
-
-        this.walls.forEach(body => {
-            this.scene.matter.world.remove(body);
-        });
-
         this.walls = [];
 
     }
 
     buildArena(cx, cy, radius) {
 
-        this.clear();
+        // Remove previous walls
+        this.walls.forEach(w => {
+            this.scene.matter.world.remove(w);
+        });
 
-        const segments = 72;
-        const gapSize = 50;
+        this.walls = [];
 
-        for (let i = 0; i < segments; i++) {
+        const SEGMENTS = 72;
+        const GAP = Phaser.Math.DegToRad(50);
 
-            const angle = (Math.PI * 2 / segments) * i;
+        for (let i = 0; i < SEGMENTS; i++) {
 
-            // Opening at top
-            let deg = Phaser.Math.RadToDeg(angle) - 90;
+            const a1 = (Math.PI * 2 / SEGMENTS) * i;
+            const a2 = (Math.PI * 2 / SEGMENTS) * (i + 1);
 
-            if (deg < 0) deg += 360;
+            let mid = (a1 + a2) / 2;
 
-            if (deg < gapSize || deg > 360 - gapSize)
+            // normalize
+            if (mid > Math.PI)
+                mid -= Math.PI * 2;
+
+            // TOP opening
+            if (
+                mid >
+                    (-Math.PI / 2 - GAP / 2) &&
+                mid <
+                    (-Math.PI / 2 + GAP / 2)
+            ) {
                 continue;
+            }
 
-            const x = cx + Math.cos(angle) * radius;
-            const y = cy + Math.sin(angle) * radius;
+            const x1 = cx + Math.cos(a1) * radius;
+            const y1 = cy + Math.sin(a1) * radius;
+
+            const x2 = cx + Math.cos(a2) * radius;
+            const y2 = cy + Math.sin(a2) * radius;
+
+            const length = Phaser.Math.Distance.Between(
+                x1,
+                y1,
+                x2,
+                y2
+            );
 
             const wall = this.scene.matter.add.rectangle(
 
-                x,
+                (x1 + x2) / 2,
 
-                y,
+                (y1 + y2) / 2,
 
-                radius * 0.11,
+                length,
 
-                10,
+                8,
 
                 {
+
                     isStatic: true,
-                    angle: angle + Math.PI / 2
+
+                    angle: Phaser.Math.Angle.Between(
+                        x1,
+                        y1,
+                        x2,
+                        y2
+                    )
+
                 }
 
             );
 
             this.walls.push(wall);
+
+        }
+
+    }
+
+    update(tokens, cx, cy, radius) {
+
+        for (let i = tokens.length - 1; i >= 0; i--) {
+
+            const token = tokens[i];
+
+            const dx = token.x - cx;
+            const dy = token.y - cy;
+
+            const d = Math.sqrt(dx * dx + dy * dy);
+
+            // escaped arena
+            if (d > radius + 60) {
+
+                token.destroy();
+                tokens.splice(i, 1);
+
+            }
 
         }
 
