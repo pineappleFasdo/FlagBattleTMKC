@@ -169,6 +169,31 @@ export default class GameScene extends Phaser.Scene {
         this.startButton.setVisible(false);
 
         this.flagManager.launch();
+this.shakeTimer = this.time.addEvent({
+
+    delay: 250,
+
+    loop: true,
+
+    callback: () => {
+
+        for (const token of this.flagManager.tokens) {
+
+            if (!token || !token.body) continue;
+
+            token.applyForce({
+
+                x: Phaser.Math.FloatBetween(-0.00018, 0.00018),
+
+                y: Phaser.Math.FloatBetween(-0.00018, 0.00018)
+
+            });
+
+        }
+
+    }
+
+});
 
         this.time.addEvent({
 
@@ -195,6 +220,9 @@ export default class GameScene extends Phaser.Scene {
         });
 
     }
+if (this.shakeTimer) {
+    this.shakeTimer.remove();
+}
 
     endQualifying() {
 
