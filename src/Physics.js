@@ -57,25 +57,38 @@ export default class PhysicsManager {
 
     update(tokens, cx, cy, radius) {
 
-        for (let i = tokens.length - 1; i >= 0; i--) {
+    for (let i = tokens.length - 1; i >= 0; i--) {
 
-            const token = tokens[i];
+        const token = tokens[i];
 
-            const dx = token.x - cx;
-            const dy = token.y - cy;
+        if (!token || !token.body) continue;
 
-            const distance = Math.sqrt(dx * dx + dy * dy);
+        const dx = token.x - cx;
+        const dy = token.y - cy;
 
-            // Ball has completely left the arena
-            if (distance > radius + 40) {
+        const distance = Math.sqrt(dx * dx + dy * dy);
 
-                token.destroy();
-                tokens.splice(i, 1);
+        // Remove token once it is clearly outside the arena
+        if (distance > radius + 12) {
 
+            token.destroy();
+            tokens.splice(i, 1);
+
+            if (this.scene.flagManager) {
+                this.scene.flagManager.labels[i].destroy();
+                this.scene.flagManager.labels.splice(i, 1);
+            }
+
+            if (this.scene.counter) {
+                this.scene.counter.setText(
+                    "Flags : " + tokens.length
+                );
             }
 
         }
 
     }
+
+}
 
 }
