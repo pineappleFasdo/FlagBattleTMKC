@@ -220,19 +220,19 @@ this.shakeTimer = this.time.addEvent({
         });
 
     }
-if (this.shakeTimer) {
-    this.shakeTimer.remove();
-}
+endQualifying() {
 
-    endQualifying() {
-
-        this.tournament.nextRound();
-
-        this.roundText.setText(
-            this.tournament.getRoundName()
-        );
-
+    if (this.shakeTimer) {
+        this.shakeTimer.remove();
     }
+
+    this.tournament.nextRound();
+
+    this.roundText.setText(
+        this.tournament.getRoundName()
+    );
+
+}
 
     update() {
 
