@@ -209,6 +209,12 @@ export default class GameScene extends Phaser.Scene {
     update() {
 
         this.flagManager.update();
+this.physicsManager.update(
+    this.flagManager.tokens,
+    this.cx,
+    this.cy,
+    this.radius
+);
 
     }
 
