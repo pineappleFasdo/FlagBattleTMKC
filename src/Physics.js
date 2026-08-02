@@ -16,44 +16,72 @@ export default class PhysicsManager {
         this.walls = [];
 
     }
-
     buildArena(cx, cy, radius) {
 
-        this.clear();
+    this.clear();
 
-        const segments = 72;
-        const gapSize = 50;
+    const segments = 120;
+    const gapDegrees = 36;
 
-        for (let i = 0; i < segments; i++) {
+    for (let i = 0; i < segments; i++) {
 
-            const angle = (Math.PI * 2 / segments) * i;
+        const angle1 = (Math.PI * 2 * i) / segments;
+        const angle2 = (Math.PI * 2 * (i + 1)) / segments;
 
-            // Opening at top
-            let deg = Phaser.Math.RadToDeg(angle) - 90;
+        let deg = Phaser.Math.RadToDeg((angle1 + angle2) / 2);
 
-            if (deg < 0) deg += 360;
+        // Convert so 0° is at the TOP
+        deg = (deg + 90) % 360;
 
-            if (deg < gapSize || deg > 360 - gapSize) {
-                continue;
+        // Skip only the top opening
+        if (
+            deg > 360 - gapDegrees / 2 ||
+            deg < gapDegrees / 2
+        ) {
+            continue;
+        }
+
+        const x1 = cx + Math.cos(angle1) * radius;
+        const y1 = cy + Math.sin(angle1) * radius;
+
+        const x2 = cx + Math.cos(angle2) * radius;
+        const y2 = cy + Math.sin(angle2) * radius;
+
+        const length = Phaser.Math.Distance.Between(
+            x1,
+            y1,
+            x2,
+            y2
+        );
+
+        const wall = this.scene.matter.add.rectangle(
+
+            (x1 + x2) / 2,
+
+            (y1 + y2) / 2,
+
+            length + 3,
+
+            12,
+
+            {
+                isStatic: true,
+                angle: Phaser.Math.Angle.Between(
+                    x1,
+                    y1,
+                    x2,
+                    y2
+                )
             }
 
-            const x = cx + Math.cos(angle) * radius;
-            const y = cy + Math.sin(angle) * radius;
+        );
 
-            const wall = this.scene.matter.add.rectangle(
-                x,
-                y,
-                radius * 0.11,
-                10,
-                {
-                    isStatic: true,
-                    angle: angle + Math.PI / 2
-                }
-            );
+        this.walls.push(wall);
 
-            this.walls.push(wall);
-        }
     }
+
+}
+    
 
     update(tokens, cx, cy, radius) {
 
